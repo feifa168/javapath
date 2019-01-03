@@ -12,9 +12,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.file.FileSystemNotFoundException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 
 public class App {
     public static void main(String[] args) {
@@ -159,6 +157,81 @@ public class App {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void displayByChannel(String path, boolean url, boolean isClassLoader) {
+        System.out.println("======="+path+", isurl="+(url?"true":"false") + ", isclassloader="+(isClassLoader?"true":"false"));
+        FileChannel fc = null;
+        if (url) {
+            URL ul = null;
+            if (isClassLoader) {
+                ul = getClass().getClassLoader().getResource(path);
+            } else {
+                ul = getClass().getResource(path);
+            }
+            if (ul != null) {
+                try {
+                    URI ui = ul.toURI();
+                    Path pt = Paths.get(ui);
+                    fc = FileChannel.open(pt, StandardOpenOption.READ);
+                } catch (URISyntaxException e) {
+                    //e.printStackTrace();
+                    System.out.println(e.getMessage());
+                } catch (IOException e) {
+                    //e.printStackTrace();
+                    System.out.println(e.getMessage());
+                }
+            }
+        } else {
+            try {
+                Path pt = Paths.get(path);
+                fc = FileChannel.open(pt, StandardOpenOption.READ);
+            } catch (NoSuchFileException e) {
+                //e.printStackTrace();
+                System.out.println("no such file " + e.getMessage());
+            } catch (IOException e) {
+                //e.printStackTrace();
+                System.out.println("error is " + e.getMessage());
+            }
+        }
+        if (fc != null) {
+            ByteBuffer buf = ByteBuffer.allocate(256);
+            try {
+                fc.read(buf);
+                buf.flip();
+                System.out.println(new String(buf.array()));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Test
+    public void testUrlByChannel() {
+//        testCustomUrl("config.txt", true);
+//        testCustomUrl("config.txt", false);
+
+        testCustomUrlByChannel("config/config.txt", true, true);
+        testCustomUrlByChannel("config/config.txt", true, false);
+        testCustomUrlByChannel("config/config.txt", false, false);
+        //testCustomUrl("config/resourceconfig.txt");
+    }
+
+    private void testCustomUrlByChannel(String path, boolean isurl, boolean isClassLoader) {
+        System.out.println("==========================================");
+        System.out.println("class.getResource()                 = "+getClass().getResource(""));
+        System.out.println("class.getResource(/)                = "+getClass().getResource("/"));
+        System.out.println("class.getResource(./)                = "+getClass().getResource("./"));
+        System.out.println("class.getResource(../)                = "+getClass().getResource("../"));
+        System.out.println("class.getClassloader.getResource()  = "+getClass().getClassLoader().getResource(""));
+        System.out.println("class.getClassloader.getResource(/) = "+getClass().getClassLoader().getResource("/"));
+        System.out.println("==========================================\n");
+        displayByChannel(path, isurl, isClassLoader);
+        displayByChannel("./"+path, isurl, isClassLoader);
+        displayByChannel("../"+path, isurl, isClassLoader);
+        displayByChannel("../../"+path, isurl, isClassLoader);
+        displayByChannel("../../../"+path, isurl, isClassLoader);
+        displayByChannel("/"+path, isurl, isClassLoader);
     }
 }
 
