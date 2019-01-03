@@ -1,0 +1,12 @@
+<component name="ArtifactManager">
+  <artifact name="javapath:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/javapath_jar</output-path>
+    <root id="root">
+      <element id="archive" name="javapath.jar">
+        <element id="module-output" name="javapath" />
+      </element>
+      <element id="library" level="project" name="Maven: junit:junit:4.13-beta-1" />
+      <element id="library" level="project" name="Maven: org.hamcrest:hamcrest-core:1.3" />
+    </root>
+  </artifact>
+</component>
